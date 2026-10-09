@@ -1,6 +1,7 @@
 
 import { getProducts } from "@/lib/api";
 import ProductCard from "@/components/ProductCard";
+import Hero from "@/components/Hero";
 
 export default async function Home() {
   const products = await getProducts();
@@ -20,34 +21,37 @@ export default async function Home() {
 
   return (
     <main className="mx-auto max-w-6xl space-y-10 px-4 py-10">
-      <section>
-        
-<h2 className="text-2xl font-bold text-gray-900">
-  <span className="text-red-500">▲</span>{" "}
-  আজ দাম বেড়েছে
-</h2>
+      <Hero />
 
-        <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      {/* Prices that increased */}
+      <section>
+        <h2 className="text-2xl font-bold text-gray-900">
+          <span className="text-red-500">▲</span>{" "}
+          আজ দাম বেড়েছে
+        </h2>
+
+        <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {risingProducts.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>
       </section>
 
+      {/* Prices that decreased */}
       <section>
-       
-<h2 className="text-2xl font-bold text-gray-900">
-  <span className="text-green-600">▼</span>{" "}
-  আজ দাম কমেছে
-</h2>
+        <h2 className="text-2xl font-bold text-gray-900">
+          <span className="text-green-600">▼</span>{" "}
+          আজ দাম কমেছে
+        </h2>
 
-        <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {fallingProducts.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>
       </section>
 
+      {/* All products */}
       <section id="সব-পণ্য">
         <h2 className="text-2xl font-bold text-gray-900">
           সব পণ্য
@@ -57,7 +61,7 @@ export default async function Home() {
           মোট {bengaliNumber(products.length)}টি পণ্য দেখানো হচ্ছে
         </p>
 
-        <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {products.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
