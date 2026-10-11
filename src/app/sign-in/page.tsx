@@ -1,10 +1,10 @@
-
 "use client";
 
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
+import toast from "react-hot-toast";
 
 type SocialProvider = "google" | "github";
 
@@ -31,16 +31,24 @@ export default function SignInPage() {
       });
 
       if (signInError) {
-        setError(
-          signInError.message || "সাইন ইন করা যায়নি। আবার চেষ্টা করুন।"
-        );
+        const message =
+          signInError.message ||
+          "সাইন ইন করা যায়নি। আবার চেষ্টা করুন।";
+
+        setError(message);
+        toast.error(message);
         return;
       }
 
+      toast.success("সফলভাবে সাইন ইন হয়েছে!");
       router.push("/");
       router.refresh();
     } catch {
-      setError("সার্ভারের সঙ্গে সংযোগ করা যায়নি। আবার চেষ্টা করুন।");
+      const message =
+        "সার্ভারের সঙ্গে সংযোগ করা যায়নি। আবার চেষ্টা করুন।";
+
+      setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -57,16 +65,20 @@ export default function SignInPage() {
       });
 
       if (authError) {
-        setError(
+        const message =
           authError.message ||
-            "সোশ্যাল লগইন করা যায়নি। আবার চেষ্টা করুন।"
-        );
+          "সোশ্যাল লগইন করা যায়নি। আবার চেষ্টা করুন।";
+
+        setError(message);
+        toast.error(message);
         setSocialLoading(null);
       }
     } catch {
-      setError(
-        "সোশ্যাল লগইন শুরু করা যায়নি। কনফিগারেশন পরীক্ষা করুন।"
-      );
+      const message =
+        "সোশ্যাল লগইন শুরু করা যায়নি। কনফিগারেশন পরীক্ষা করুন।";
+
+      setError(message);
+      toast.error(message);
       setSocialLoading(null);
     }
   }

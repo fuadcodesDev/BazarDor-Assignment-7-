@@ -1,24 +1,17 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 import { authClient } from "@/lib/auth-client";
 
 export default function ProfilePage() {
   const router = useRouter();
   const { data: session, isPending } = authClient.useSession();
-
-  const [name, setName] = useState("");
-  const [saving, setSaving] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
 
   const user = session?.user;
-
-  useEffect(() => {
-    if (user?.name) setName(user.name);
-  }, [user?.name]);
 
   useEffect(() => {
     if (!isPending && !session) {
@@ -26,55 +19,22 @@ export default function ProfilePage() {
     }
   }, [isPending, session, router]);
 
-  async function handleUpdate(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setMessage("");
-    setError("");
-
-    const updatedName = name.trim();
-
-    if (!updatedName) {
-      setError("আপনার নাম লিখুন।");
-      return;
-    }
-
-    setSaving(true);
-
-    try {
-      const { error: updateError } = await authClient.updateUser({
-        name: updatedName,
-      });
-
-      if (updateError) {
-        setError(updateError.message || "নাম আপডেট করা যায়নি।");
-        return;
-      }
-
-      setMessage("আপনার নাম সফলভাবে আপডেট হয়েছে।");
-      router.refresh();
-    } catch {
-      setError("সার্ভারের সঙ্গে সংযোগ করা যায়নি। আবার চেষ্টা করুন।");
-    } finally {
-      setSaving(false);
-    }
-  }
-
   async function handleSignOut() {
     setSigningOut(true);
-    setError("");
 
     try {
-      const { error: signOutError } = await authClient.signOut();
+      const { error } = await authClient.signOut();
 
-      if (signOutError) {
-        setError(signOutError.message || "সাইন আউট করা যায়নি।");
+      if (error) {
+        toast.error(error.message || "সাইন আউট করা যায়নি।");
         return;
       }
 
+      toast.success("সফলভাবে সাইন আউট হয়েছে।");
       router.replace("/sign-in");
       router.refresh();
     } catch {
-      setError("সাইন আউট করা যায়নি। আবার চেষ্টা করুন।");
+      toast.error("সাইন আউট করা যায়নি। আবার চেষ্টা করুন।");
     } finally {
       setSigningOut(false);
     }
@@ -82,8 +42,10 @@ export default function ProfilePage() {
 
   if (isPending || !session || !user) {
     return (
-      <main className="flex min-h-[60vh] items-center justify-center bg-[#eff5ef]">
-        <p className="text-sm text-[#667369]">প্রোফাইল লোড হচ্ছে...</p>
+      <main className="flex min-h-[60vh] flex-1 items-center justify-center bg-[#eff5ef]">
+        <p className="text-sm text-[#667369]">
+          প্রোফাইল লোড হচ্ছে...
+        </p>
       </main>
     );
   }
@@ -98,7 +60,7 @@ export default function ProfilePage() {
       .toUpperCase() || "U";
 
   return (
-    <main className="min-h-[60vh] bg-[#eff5ef] px-4 py-12 sm:py-16">
+    <main className="min-h-[60vh] flex-1 bg-[#eff5ef] px-4 py-12 sm:py-16">
       <div className="mx-auto max-w-[400px]">
         <header className="mb-6">
           <h1 className="text-base font-bold text-[#26352b]">
@@ -109,7 +71,7 @@ export default function ProfilePage() {
           </p>
         </header>
 
-        <section className="mb-3 flex items-center gap-3 rounded-xl border border-[#e4ebe4] bg-[#fbfdfb] p-3">
+        <section className="flex items-center gap-3 rounded-xl border border-[#e4ebe4] bg-[#fbfdfb] p-3">
           {user.image ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -135,58 +97,38 @@ export default function ProfilePage() {
           <button
             type="button"
             onClick={handleSignOut}
-            disabled={signingOut || saving}
+            disabled={signingOut}
             className="shrink-0 rounded-md border border-[#f08080] bg-white px-2.5 py-2 text-[10px] font-medium text-[#e05252] transition hover:bg-red-50 disabled:opacity-60"
           >
             {signingOut ? "অপেক্ষা করুন..." : "↪ সাইন আউট"}
           </button>
         </section>
 
-        <section className="rounded-xl border border-[#e4ebe4] bg-[#fbfdfb] p-4">
-          <h2 className="mb-5 text-xs font-semibold text-[#26352b]">
-            তথ্য
+        <section className="mt-3 rounded-xl border border-[#e4ebe4] bg-[#fbfdfb] p-4">
+          <h2 className="text-xs font-semibold text-[#26352b]">
+            অ্যাকাউন্টের তথ্য
           </h2>
 
-          <form onSubmit={handleUpdate}>
-            <label
-              htmlFor="profile-name"
-              className="mb-1.5 block text-[11px] font-medium text-[#26352b]"
-            >
-              নাম
-            </label>
+          <div className="mt-4 border-b border-[#e4ebe4] pb-3">
+            <p className="text-[11px] text-[#788179]">নাম</p>
+            <p className="mt-1 break-words text-sm text-[#26352b]">
+              {user.name || "নাম দেওয়া হয়নি"}
+            </p>
+          </div>
 
-            <input
-              id="profile-name"
-              type="text"
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              autoComplete="name"
-              maxLength={100}
-              required
-              disabled={saving || signingOut}
-              className="w-full rounded-md border border-[#e1e8e1] bg-white px-3 py-2.5 text-xs text-[#26352b] outline-none transition focus:border-[#078b43] focus:ring-2 focus:ring-[#078b43]/10 disabled:opacity-60"
-            />
+          <div className="mt-3">
+            <p className="text-[11px] text-[#788179]">ইমেইল</p>
+            <p className="mt-1 break-all text-sm text-[#26352b]">
+              {user.email}
+            </p>
+          </div>
 
-            {error && (
-              <p role="alert" className="mt-3 text-[11px] text-red-600">
-                {error}
-              </p>
-            )}
-
-            {message && (
-              <p role="status" className="mt-3 text-[11px] text-[#078b43]">
-                {message}
-              </p>
-            )}
-
-            <button
-              type="submit"
-              disabled={saving || signingOut || !name.trim()}
-              className="mt-2.5 w-full rounded-md bg-[#078b43] px-4 py-2.5 text-[11px] font-semibold text-white transition hover:bg-[#067638] disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {saving ? "আপডেট হচ্ছে..." : "আপডেট"}
-            </button>
-          </form>
+          <Link
+            href="/profile/update"
+            className="mt-5 flex w-full items-center justify-center rounded-md bg-[#078b43] px-4 py-3 text-xs font-semibold text-white transition hover:bg-[#067638]"
+          >
+            Update Information
+          </Link>
         </section>
       </div>
     </main>

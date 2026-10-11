@@ -1,16 +1,24 @@
 
 import { Suspense } from "react";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { headers } from "next/headers";
+import { auth } from "@/lib/auth";
 import { getProductBySlug } from "@/lib/api";
-
 type ProductPageProps = {
   params: Promise<{ slug: string }>;
 };
 
 async function ProductDetails({ params }: ProductPageProps) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session) {
+    redirect("/sign-in?redirectTo=/product");
+  }
+
   const { slug } = await params;
   const product = await getProductBySlug(slug);
-
   if (!product) {
     notFound();
   }

@@ -1,28 +1,40 @@
-
 "use client";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import toast from "react-hot-toast";
 import { authClient } from "@/lib/auth-client";
 
 export default function NavbarAuth() {
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
 
   const { data: session, isPending } = authClient.useSession();
 
   async function handleSignOut() {
-    const { error } = await authClient.signOut();
+    if (signingOut) return;
 
-    if (error) {
-      console.error("Sign out failed:", error.message);
-      return;
+    setSigningOut(true);
+
+    try {
+      const { error } = await authClient.signOut();
+
+      if (error) {
+        toast.error(error.message || "সাইন আউট করা যায়নি।");
+        return;
+      }
+
+      setMenuOpen(false);
+      toast.success("সফলভাবে সাইন আউট হয়েছে!");
+      router.push("/");
+      router.refresh();
+    } catch {
+      toast.error("সাইন আউট করা যায়নি। আবার চেষ্টা করুন।");
+    } finally {
+      setSigningOut(false);
     }
-
-    setMenuOpen(false);
-    router.push("/");
-    router.refresh();
   }
 
   if (isPending) {
@@ -55,6 +67,7 @@ export default function NavbarAuth() {
         type="button"
         onClick={() => setMenuOpen((open) => !open)}
         aria-expanded={menuOpen}
+        aria-label="প্রোফাইল মেনু"
         className="flex items-center gap-2 rounded-md px-2 py-1.5 transition hover:bg-[#eff5ef]"
       >
         <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#078b43] text-xs font-semibold text-white">
@@ -74,6 +87,7 @@ export default function NavbarAuth() {
             <p className="truncate text-xs font-semibold text-[#26352b]">
               {session.user.name}
             </p>
+
             <p className="truncate text-[10px] text-[#788179]">
               {session.user.email}
             </p>
@@ -90,9 +104,10 @@ export default function NavbarAuth() {
           <button
             type="button"
             onClick={handleSignOut}
-            className="w-full rounded-md px-3 py-2 text-left text-xs text-red-600 transition hover:bg-red-50"
+            disabled={signingOut}
+            className="w-full rounded-md px-3 py-2 text-left text-xs text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            সাইন আউট
+            {signingOut ? "সাইন আউট হচ্ছে..." : "সাইন আউট"}
           </button>
         </div>
       )}
