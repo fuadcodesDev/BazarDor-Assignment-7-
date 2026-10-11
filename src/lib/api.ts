@@ -1,4 +1,3 @@
-
 import type { Product } from "./types";
 
 const API_URL =
@@ -22,4 +21,21 @@ export async function getProductBySlug(
   const products = await getProducts();
 
   return products.find((product) => product.slug === slug);
+}
+
+export async function getProductsByCategory(
+  category: string
+): Promise<Product[]> {
+  const response = await fetch(
+    `${API_URL}/products?category=${encodeURIComponent(category)}`,
+    {
+      cache: "force-cache",
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch category products");
+  }
+
+  return response.json();
 }
