@@ -4,6 +4,7 @@ import Link from "next/link";
 import { getBanglaDate } from "@/lib/date";
 import { Suspense } from "react";
 import { connection } from "next/server";
+import NavbarAuth from "@/components/navbar-auth";
 
 const categories = [
   { name: "🥥 চাল", href: "/category/chal" },
@@ -58,21 +59,8 @@ export default function Navbar() {
         </Link>
 
         {/* Authentication links */}
-        <div className="flex shrink-0 items-center gap-2">
-          <Link
-            href="/sign-in"
-            className="rounded-md px-3 py-2 text-[11px] font-medium text-[#26352b] transition hover:bg-[#eff5ef]"
-          >
-            সাইন ইন
-          </Link>
-
-          <Link
-            href="/sign-up"
-            className="rounded-md bg-[#078b43] px-3 py-2 text-[11px] font-semibold text-white shadow-sm transition hover:bg-[#067638]"
-          >
-            সাইন আপ
-          </Link>
-        </div>
+       
+<NavbarAuth />
       </div>
 
       {/* Category row */}
